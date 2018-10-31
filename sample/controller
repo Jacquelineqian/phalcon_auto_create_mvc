@@ -1,0 +1,46 @@
+<?php
+
+namespace admin;
+
+
+class %PController extends BaseController
+{
+    function indexAction()
+    {
+        $cond = $this->getConditions('%S');
+        $cond['order'] = 'id desc';
+        $page = $this->params('page');
+        $%D = \%P::findPagination($cond, $page);
+        $this->view->%D = $%D;
+    }
+
+    function newAction()
+    {
+        $%S = new \%P();
+        $this->view->%S = $%S;
+    }
+
+    function createAction()
+    {
+        $%S = new \%P();
+        $this->assign($%S, '%S');
+        if ($%S->save()) {
+            $this->renderJSON(ERROR_CODE_SUCCESS, '新建成功', ['redirect_url' => $this->referer]);
+        }
+    }
+
+    function editAction()
+    {
+        $%S = \%P::findFirstById($this->params('id'));
+        $this->view->%S = $%S;
+    }
+
+    function updateAction()
+    {
+        $%S = \%P::findFirstById($this->params('id'));
+        $this->assign($%S, '%S');
+        if ($%S->save()) {
+            $this->renderJSON(ERROR_CODE_SUCCESS, '修改成功', ['redirect_url' => $this->referer]);
+        }
+    }
+}

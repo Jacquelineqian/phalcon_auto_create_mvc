@@ -1,0 +1,43 @@
+<?php
+
+class %P extends BaseModel
+{
+    static $STATUS = [STATUS_ON => '正常', STATUS_OFF => '禁用'];
+
+    /**
+     * @type ProductChannels
+     */
+    private $_product_channel;
+
+    /**
+     * @type integer
+     */
+    private $_temp_field;
+
+    static function getCacheEndpoint($id)
+    {
+        $end_point = self::di('config')->get('ssdb_endpoint');
+        return $end_point;
+    }
+
+    function beforeCreate()
+    {
+
+    }
+
+    function afterCreate()
+    {
+
+    }
+
+    function asyncAfterCreate()
+    {
+
+    }
+
+    function getFieldName()
+    {
+        return $this->field;
+    }
+
+}
