@@ -13,6 +13,9 @@ where c.relname = '%D' and a.attrelid = c.oid and a.attnum>0";
         $results = $result->fetchall();
         $view_str = '';
         foreach ($results as $result) {
+            if (strstr($result['name'], '.')) {
+                break;
+            }
             $en_word = str_replace('_', '+', $result['name']);
             $zh_word = $this->translate($en_word);
             if ($view_str) {
@@ -20,13 +23,29 @@ where c.relname = '%D' and a.attrelid = c.oid and a.attnum>0";
             }
             $field_name = $this->fieldCheck($result['name']);
             $view_str .= "'" . $zh_word . "'" . ':' . "'" . $field_name . "'";
+            if (in_array($result['name'], ['status', 'type', 'sex'])) {
+                $new_str .= "{{ f.select('" . $result['name'] . "', ['label': '" . $zh_word . "', 'collection': %P." .
+                    strtoupper($result['name']) . "]) }}";
+            } else {
+                $new_str .= "{{ f.input(" . $result['name'] . ",['label':'" . $zh_word . "','width':'100%']) }}";
+            }
         }
         $view_str = '{{ simple_table(%D,[' . $view_str . ']) }}';
+        $new_str = "{% set f = simple_form(['admin',%S],['method':'post', 'class':'ajax_model_form']) %}" .
+                    $new_str . "{{ f.submit('保存') }}{{ f.end }}";
         var_dump($view_str);
+        var_dump($new_str);
     }
 
     function translate($trans_word)
     {
+        $common_words = ['mobile' => '手机号', 'password' => '密码', 'id' => 'ID', 'name' => '名称', 'status' => '状态',
+            'rank' => '排序', 'created+at' => '创建时间', 'updated+at' => '修改时间', 'icon' => '图标',
+            'avatar' => '头像', 'sid' => 'SID', 'ip' => 'IP', 'remark' => '备注', 'amount' => '数量', 'balance' => '余额',
+            'fee' => '手续费', 'code' => 'CODE', 'url' => '路由'];
+        if (in_array($trans_word, array_keys($common_words))) {
+            return $common_words[$trans_word];
+        }
         $host = "http://yeecloudmt.market.alicloudapi.com/translate";
         $appcode = "APPCODE 3282dba31838445b95430d393b143ef4";
         $headers = ["Authorization" => $appcode];
