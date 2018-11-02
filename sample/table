@@ -12,6 +12,7 @@ where c.relname = '%D' and a.attrelid = c.oid and a.attnum>0";
         $result->setFetchMode(\Phalcon\Db::FETCH_ASSOC);
         $results = $result->fetchall();
         $view_str = '';
+        $new_str = '';
         foreach ($results as $result) {
             if (strstr($result['name'], '.')) {
                 break;
