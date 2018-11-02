@@ -20,6 +20,9 @@ cp ../../sample/model ./${pascal}
 sed -i '' 's/%P/'${pascal}'/g' ./${pascal}
 mv ./${pascal} ./${pascal}.php
 
+cp ../../sample/table ./table
+sed -i '' 's/%D/'${dulplication}'/g' ./table
+
 cp -r ../../sample/view ./${dulplication}
 cd ./${dulplication}
 sed -i '' 's/%P/'${pascal}'/g' index.volt
@@ -30,3 +33,6 @@ sed -i '' 's/%S/'${single}'/g' form.volt
 sed -i '' 's/%D/'${dulplication}'/g' form.volt
 sed -i '' 's/%D/'${dulplication}'/g' edit.volt
 sed -i '' 's/%D/'${dulplication}'/g' new.volt
+
+
+

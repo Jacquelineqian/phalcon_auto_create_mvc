@@ -1,0 +1,57 @@
+
+    /**
+     * 请在终端中执行 php cli.php TASKNAME field
+     * e.g. 本文件是/app/tasks/Usertask.php 执行语句为: php cli.php user field
+     */
+    function fieldAction()
+    {
+        $di = \Phalcon\Di::getDefault();
+        $sql = "SELECT a.attname as name FROM pg_class as c,pg_attribute as a
+where c.relname = '%D' and a.attrelid = c.oid and a.attnum>0";
+        $result = $di->get('db')->query($sql);
+        $result->setFetchMode(\Phalcon\Db::FETCH_ASSOC);
+        $results = $result->fetchall();
+        $view_str = '';
+        foreach ($results as $result) {
+            $en_word = str_replace('_', '+', $result['name']);
+            $zh_word = $this->translate($en_word);
+            if ($view_str) {
+                $view_str .= ',';
+            }
+            $field_name = $this->fieldCheck($result['name']);
+            $view_str .= "'" . $zh_word . "'" . ':' . "'" . $field_name . "'";
+        }
+        $view_str = '{{ simple_table(%D,[' . $view_str . ']) }}';
+        var_dump($view_str);
+    }
+
+    function translate($trans_word)
+    {
+        $host = "http://yeecloudmt.market.alicloudapi.com/translate";
+        $appcode = "APPCODE 3282dba31838445b95430d393b143ef4";
+        $headers = ["Authorization" => $appcode];
+        $querys = "srcl=en&text=" . $trans_word . "&tgtl=zh";
+        $url = $host . "?" . $querys;
+        $result = httpGet($url, "", $headers);
+        $result = $result->body;
+        $result = json_decode($result);
+        return $result->result;
+    }
+
+    function fieldCheck($field)
+    {
+        switch ($field) {
+            case 'icon':
+                return "icon_url_height100_tag";
+            case 'created_at':
+                return "created_at_text";
+            case 'updated_at':
+                return "updated_at_text";
+            case 'status':
+                return 'status_text';
+            case 'type':
+                return 'type_text';
+            default:
+                return $field;
+        }
+    }
