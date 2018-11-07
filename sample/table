@@ -15,7 +15,7 @@ where c.relname = '%D' and a.attrelid = c.oid and a.attnum>0";
         $new_str = '';
         foreach ($results as $result) {
             if (strstr($result['name'], '.')) {
-                break;
+                continue;
             }
             $en_word = str_replace('_', '+', $result['name']);
             $zh_word = $this->translate($en_word);
