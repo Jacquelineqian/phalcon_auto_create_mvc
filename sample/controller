@@ -25,7 +25,7 @@ class %PController extends BaseController
         $%S = new \%P();
         $this->assign($%S, '%S');
         if ($%S->save()) {
-            $this->renderJSON(ERROR_CODE_SUCCESS, '新建成功', ['redirect_url' => $this->referer]);
+            return $this->renderJSON(ERROR_CODE_SUCCESS, '新建成功', ['redirect_url' => $this->referer]);
         }
     }
 
@@ -40,7 +40,7 @@ class %PController extends BaseController
         $%S = \%P::findFirstById($this->params('id'));
         $this->assign($%S, '%S');
         if ($%S->save()) {
-            $this->renderJSON(ERROR_CODE_SUCCESS, '修改成功', ['redirect_url' => $this->referer]);
+            return $this->renderJSON(ERROR_CODE_SUCCESS, '修改成功', ['redirect_url' => $this->referer]);
         }
     }
 }
