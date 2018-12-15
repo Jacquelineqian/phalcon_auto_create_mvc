@@ -28,13 +28,15 @@ where c.relname = '%D' and a.attrelid = c.oid and a.attnum>0";
                 $new_str .= "{{ f.select('" . $result['name'] . "', ['label': '" . $zh_word . "', 'collection': %P." .
                     strtoupper($result['name']) . "]) }}";
             } else {
-                $new_str .= "{{ f.input(" . $result['name'] . ",['label':'" . $zh_word . "','width':'100%']) }}";
+                $new_str .= "{{ f.input('" . $result['name'] . "',['label':'" . $zh_word . "','width':'100%']) }}";
             }
         }
         $view_str = '{{ simple_table(%D,[' . $view_str . ']) }}';
         $new_str = "{% set f = simple_form(['admin',%S],['method':'post', 'class':'ajax_model_form']) %}" .
                     $new_str . "{{ f.submit('保存') }}{{ f.end }}";
+        var_dump('______________________________________________');
         var_dump($view_str);
+        var_dump('______________________________________________');
         var_dump($new_str);
     }
 
