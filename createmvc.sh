@@ -22,8 +22,8 @@ mv ./${pascal} ./${pascal}.php
 
 cp ../../sample/table ./table
 sed -i '' 's/%D/'${dulplication}'/g' ./table
-sed -i '' 's/%S/'${dulplication}'/g' ./table
-sed -i '' 's/%P/'${dulplication}'/g' ./table
+sed -i '' 's/%S/'${single}'/g' ./table
+sed -i '' 's/%P/'${pascal}'/g' ./table
 
 cp -r ../../sample/view ./${dulplication}
 cd ./${dulplication}
