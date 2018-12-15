@@ -6,6 +6,7 @@
      
     ./createmvc.sh Users user users
     ./createmvc.sh CoinHistories coin_history coin_histories
+    mkdir temp
     
 ### 生成完毕 将TABLENAMEController.php TABLENAME.php TABLENAME文件夹 放到对应位置
 
