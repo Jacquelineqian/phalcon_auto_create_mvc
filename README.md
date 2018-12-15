@@ -13,7 +13,8 @@
 ### 将生成的temp/TABLENAME/中的table文件放到task任务中
 
     在项目终端中执行:
-     
+    
+    php cli.php db migrate
     php cli.php TAKSNAME field
      
     生成的字符串"{{simple_table(...)}}"替换view/index.view对应的{{{{simple_table()}}
