@@ -1,0 +1,325 @@
+
+
+
+
+
+
+/**
+     * 请在终端中执行 php cli.php TASKNAME field
+     * e.g. 本文件是/app/tasks/UserTask.php 执行语句为: php cli.php user field
+     * e.g. 本文件是/app/tasks/UsersNamesTask.php 执行语句为: php cli.php users_names field
+     */
+    function fieldAction()
+    {
+        $di = \Phalcon\Di::getDefault();
+        $sql = "SELECT a.attname as name FROM pg_class as c,pg_attribute as a
+where c.relname = '%D' and a.attrelid = c.oid and a.attnum>0";
+        $result = $di->get('db')->query($sql);
+        $result->setFetchMode(\Phalcon\Db::FETCH_ASSOC);
+        $results = $result->fetchall();
+
+        $view_str = '<div class="x-nav">
+                           <span class="layui-breadcrumb">
+                             <a href="">%P管理</a>
+                             <a>
+                               <cite>%P列表</cite></a>
+                           </span>
+                         <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" href="javascript:location.replace(location.href);" title="刷新">
+                             <i class="layui-icon" style="line-height:30px">ဂ</i></a>
+                     </div>
+                     <div class="x-body">
+                     <xblock>
+                             <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>
+                             <button class="layui-btn" onclick="x_admin_show(\'添加%P\',\'/admin/%D/new\')"><i class="layui-icon"></i>添加</button>
+                             <span class="x-right" style="line-height:40px">共有数据：{{ %D.total_entries }} 条</span>
+                         </xblock>
+                         <table class="layui-table">
+                             <thead>
+                             <tr>
+                                 <th>
+                                     <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+                                 </th>';
+        $new_str = '<div class="x-body layui-anim layui-anim-up">
+                        <form class="layui-form" action="/admin/%D/create" method="post">';
+        $edit_str = '<div class="x-body layui-anim layui-anim-up">
+                        <form class="layui-form" action="/admin/%D/update/{{ %S.id }}" method="post">';
+        $zh_str = '';
+        $en_str = '';
+        foreach ($results as $result) {
+            if (strstr($result['name'], '.')) {
+                continue;
+            }
+            $en_word = str_replace('_', '+', $result['name']);
+            $zh_word = $this->translate($en_word);
+
+            $field_name = $this->fieldCheck($result['name']);
+
+            $zh_str .= "<th>".$zh_word."</th>";
+            $en_str .= "<td>{{ %S.".$field_name." }}</td>";
+
+            if ( !in_array($result['name'],['id','created_at','updated_at'])) {
+
+                            $new_str .= '<div class="layui-form-item">
+                            <label for="L_' . $result['name'] . '" class="layui-form-label">' . $zh_word;
+
+                            $edit_str .= '<div class="layui-form-item">
+                                                                     <label for="L_' . $result['name'] . '" class="layui-form-label">' . $zh_word;
+
+                            if(in_array($result['name'],['type','status'])){
+
+                                $new_str .= '</label>
+                        <div class="layui-input-inline">
+                            <select id="'.$result['name'].'" name="%S['.$result['name'].']" class="valid">
+                                {{ options(%P.'.strtoupper($result['name']).') }}
+                            </select>
+                        </div></div>';
+
+                        $edit_str .= '</label>
+                        <div class="layui-input-inline">
+                            <select id="'.$result['name'].'" name="%S['.$result['name'].']" class="valid">
+                                {{ options(%P.'.strtoupper($result['name']).', %S.'.$result['name'].') }}
+                            </select>
+                        </div></div>';
+
+                            }else{
+
+                                $new_str .= '</label>
+                        <div class="layui-input-inline">
+                            <input type="text" id="' . $result['name'] . '" name="%S[' . $result['name'] . ']" required="" autocomplete="off" class="layui-input">
+                        </div></div>';
+
+                        $edit_str .= '</label>
+                        <div class="layui-input-inline">
+                            <input type="text" id="' . $result['name'] . '" name="%S[' . $result['name'] . ']" required="" autocomplete="off" class="layui-input" value="{{ %S.'.$result['name'].' }}" >
+                        </div></div>';
+
+                            }
+
+
+                        }
+
+        }
+        $view_str .= $zh_str;
+        $view_str .= '<th>操作</th></tr>
+        </thead>
+        <tbody>
+        {% for %S in %D %}
+            <tr>
+                <td>
+                    <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id=\'2\'><i class="layui-icon">&#xe605;</i></div>
+                </td>';
+
+        $view_str .= $en_str;
+        $view_str .= '<td class="td-manage">
+                    <a title="查看"  onclick="x_admin_show(\'编辑\',\'/admin/%D/edit/{{ %S.id }}\')" href="javascript:;">
+                        <i class="layui-icon">&#xe63c;</i>
+                    </a>
+                    <a title="删除" onclick="member_del(this,{{ %S.id }})" href="javascript:;">
+                        <i class="layui-icon">&#xe640;</i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {{ pageNums(templates) }}
+</div>
+<script>
+    layui.use(\'laydate\', function(){
+        var laydate = layui.laydate;
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: \'#start\' //指定元素
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: \'#end\' //指定元素
+        });
+    });
+
+    /*用户-停用*/
+    function member_stop(obj,id){
+        layer.confirm(\'确认要停用吗？\',function(index){
+
+            if($(obj).attr(\'title\')==\'启用\'){
+
+                //发异步把用户状态进行更改
+                $(obj).attr(\'title\',\'停用\')
+                $(obj).find(\'i\').html(\'&#xe62f;\');
+
+                $(obj).parents("tr").find(".td-status").find(\'span\').addClass(\'layui-btn-disabled\').html(\'已停用\');
+                layer.msg(\'已停用!\',{icon: 5,time:1000});
+
+            }else{
+                $(obj).attr(\'title\',\'启用\')
+                $(obj).find(\'i\').html(\'&#xe601;\');
+
+                $(obj).parents("tr").find(".td-status").find(\'span\').removeClass(\'layui-btn-disabled\').html(\'已启用\');
+                layer.msg(\'已启用!\',{icon: 5,time:1000});
+            }
+
+        });
+    }
+
+    /*用户-删除*/
+    function member_del(obj,id){
+        layer.confirm(\'确认要删除吗？\',function(index){
+            //发异步删除数据
+            $.get(\'/admin/%D/delete/\' + id, function (resp) {
+                if (resp.error_code == -1) {
+                    layer.msg(\'删除失败!\', {icon: 1, time: 1000});
+                    return false;
+                } else {
+                    $(obj).parents("tr").remove();
+                    layer.msg(\'已删除!\', {icon: 1, time: 1000});
+                    // top.window.location.href = resp.redirect_url;
+                }
+            });
+        });
+    }
+
+
+
+    function delAll (argument) {
+
+        var data = tableCheck.getData();
+
+        layer.confirm(\'确认要删除吗？\'+data,function(index){
+            //捉到所有被选中的，发异步进行删除
+            layer.msg(\'删除成功\', {icon: 1});
+            $(".layui-form-checked").not(\'.header\').parents(\'tr\').remove();
+        });
+    }
+</script>';
+
+
+$new_str .= '<div class="layui-form-item">
+            <label for="L_repass" class="layui-form-label">
+            </label>
+            <button class="layui-btn" lay-filter="add" lay-submit="">
+                增加
+            </button>
+        </div>
+    </form>
+</div>
+<script>
+    layui.use([\'form\', \'layer\'], function () {
+        $ = layui.jquery;
+        var form = layui.form
+            , layer = layui.layer;
+        //监听提交
+        form.on(\'submit(add)\', function (layui_data) {
+            $(layui_data.form).ajaxSubmit({
+                error: function (xhr, status, error) {
+                    message = error;
+                },
+                success: function (resp, status, xhr) {
+
+                    layer.alert(\'成功\', {icon: 6}, function () {
+                        // 获得frame索引
+                        var index = parent.layer.getFrameIndex(window.name);
+                        //关闭当前frame
+                        parent.layer.close(index);
+                        location.replace(location.href);
+                    });
+                }
+            });
+
+            return false;
+        });
+    });
+</script>';
+
+$edit_str .= '<div class="layui-form-item">
+            <label for="L_repass" class="layui-form-label">
+            </label>
+            <button class="layui-btn" lay-filter="add" lay-submit="">
+                编辑
+            </button>
+        </div>
+    </form>
+</div>
+<script>
+    layui.use([\'form\', \'layer\'], function () {
+        $ = layui.jquery;
+        var form = layui.form
+            , layer = layui.layer;
+        //监听提交
+        form.on(\'submit(add)\', function (layui_data) {
+            $(layui_data.form).ajaxSubmit({
+                error: function (xhr, status, error) {
+                    message = error;
+                },
+                success: function (resp, status, xhr) {
+
+                    layer.alert(\'成功\', {icon: 6}, function () {
+                        // 获得frame索引
+                        var index = parent.layer.getFrameIndex(window.name);
+                        //关闭当前frame
+                        parent.layer.close(index);
+                        location.replace(location.href);
+                    });
+                }
+            });
+
+            return false;
+        });
+    });
+</script>';
+
+
+        echo "\n\n\n";
+        var_dump('_____________________index_________________________');
+        echo "\n\n\n";
+        echo $view_str;
+        echo "\n\n\n";
+        var_dump('___________________new___________________________');
+        echo "\n\n\n";
+        echo $new_str;
+        echo "\n\n\n";
+        var_dump('___________________edit___________________________');
+        echo "\n\n\n";
+        echo $edit_str;
+        echo "\n\n\n";
+    }
+
+    function translate($trans_word)
+    {
+        $common_words = ['mobile' => '手机号', 'password' => '密码', 'id' => 'ID', 'name' => '名称', 'status' => '状态',
+            'rank' => '排序', 'created+at' => '创建时间', 'updated+at' => '修改时间', 'icon' => '图标',
+            'avatar' => '头像', 'sid' => 'SID', 'ip' => 'IP', 'remark' => '备注', 'amount' => '数量', 'balance' => '余额',
+            'fee' => '手续费', 'code' => 'CODE', 'url' => '路由'];
+        if (in_array($trans_word, array_keys($common_words))) {
+            return $common_words[$trans_word];
+        }
+        $host = "http://yeecloudmt.market.alicloudapi.com/translate";
+        $appcode = "APPCODE 3282dba31838445b95430d393b143ef4";
+        $headers = ["Authorization" => $appcode];
+        $querys = "srcl=en&text=" . $trans_word . "&tgtl=zh";
+        $url = $host . "?" . $querys;
+        $result = httpGet($url, "", $headers);
+        $result = $result->body;
+        $result = json_decode($result);
+        return $result->result;
+    }
+
+    function fieldCheck($field)
+    {
+        switch ($field) {
+            case 'icon':
+                return "icon_url_height100_tag";
+            case 'created_at':
+                return "created_at_text";
+            case 'updated_at':
+                return "updated_at_text";
+            case 'status':
+                return 'status_text';
+            case 'type':
+                return 'type_text';
+            default:
+                return $field;
+        }
+    }

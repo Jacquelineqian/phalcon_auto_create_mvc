@@ -35,9 +35,12 @@ where c.relname = '%D' and a.attrelid = c.oid and a.attnum>0";
         $new_str = "{% set f = simple_form(['admin',%S],['method':'post', 'class':'ajax_model_form']) %}" .
                     $new_str . "{{ f.submit('保存') }}{{ f.end }}";
         var_dump('______________________________________________');
-        var_dump($view_str);
+        echo "\n\n\n";
+        echo $view_str;
+        echo "\n\n\n";
         var_dump('______________________________________________');
-        var_dump($new_str);
+        echo "\n\n\n";
+        echo $new_str;
     }
 
     function translate($trans_word)
